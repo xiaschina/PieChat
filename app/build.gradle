@@ -59,9 +59,11 @@ android {
         机锋市场 {}
         // 魅族商店
         魅族商店 {}
+        */
+        mi {}
         productFlavors.all {
             flavor -> flavor.manifestPlaceholders = [UMENG_CHANNEL_VALUE: name]
-        }*/
+        }
     }
 
 //修改生成的apk名字
