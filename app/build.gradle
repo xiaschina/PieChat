@@ -1,5 +1,20 @@
 apply plugin: 'com.android.application'
 
+ext.appVersionCode = 1
+ext.appVersionName = "1.0.0"
+ext.appReleaseDir = ""
+
+def loadProperties() {
+    def proFile = file("../setting.properties")
+    Properties p = new Properties()
+    proFile.withInputStream { stream->
+        p.load(stream)
+    }
+    appReleaseDir = p.appReleaseDir
+}
+
+loadProperties()
+
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.0"
@@ -17,6 +32,64 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    productFlavors {
+        /*//  默认
+        Witspring {}
+        // google play
+        谷歌商店 {}
+        // 百度应用市场
+        百度应用市场 {}
+        // 360应用市场
+        _360应用市场 {}
+        // 应用宝
+        应用宝 {}
+        // 豌豆荚
+        豌豆荚 {}
+        // 小米商店
+        小米商店 {}
+        // 安卓市场
+        安卓市场 {}
+        // 91助手
+        _91助手 {}
+        // 安智市场
+        安智市场 {}
+        // 应用汇
+        应用汇 {}
+        // 机锋市场
+        机锋市场 {}
+        // 魅族商店
+        魅族商店 {}
+        productFlavors.all {
+            flavor -> flavor.manifestPlaceholders = [UMENG_CHANNEL_VALUE: name]
+        }*/
+    }
+
+//修改生成的apk名字
+    applicationVariants.all{ variant->
+        variant.outputs.each { output->
+            def oldFile = output.outputFile
+            def newName = '';
+            if(variant.buildType.name.equals('debug')){
+                // APK输出文件名规则：aiyou-版本名-市场-release.apk
+                def releaseApkName = 'xias-' + appVersionName + '-' + variant.productFlavors[0].name + '-debug.apk'
+                // appReleaseDir对应local.properties里面定义的路径，再加上日期（格式：201503011230）文件夹
+                output.outputFile = new File(appReleaseDir + '/' + getDate(), releaseApkName)
+            }
+            if(variant.buildType.name.equals('release')){
+                // APK输出文件名规则：aiyou-版本名-市场-release.apk
+                def releaseApkName = 'xias-' + appVersionName + '-' + variant.productFlavors[0].name + '-release.apk'
+                // appReleaseDir对应local.properties里面定义的路径，再加上日期（格式：201503011230）文件夹
+                output.outputFile = new File(appReleaseDir + '/' + getDate(), releaseApkName)
+            }
+        }
+    }
+}
+
+//获取时间戳
+def getDate() {
+    def date = new Date()
+    def formattedDate = date.format('yyyy-MM-dd-HH-mm')
+    return formattedDate
 }
 
 dependencies {

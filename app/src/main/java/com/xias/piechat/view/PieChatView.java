@@ -2,6 +2,7 @@ package com.xias.piechat.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
@@ -28,6 +29,8 @@ public class PieChatView extends View {
     private int maxRadius;
 
     private Paint arcPaint;
+    private Paint textPaint;
+    private Paint linePaint;
     private RectF minRectF;
     private RectF maxRectF;
 
@@ -42,9 +45,19 @@ public class PieChatView extends View {
 
     private void init(){
         list = new ArrayList<>();
+
         arcPaint = new Paint();
         arcPaint.setAntiAlias(true);
         arcPaint.setStyle(Paint.Style.FILL);
+
+        linePaint = new Paint();
+        linePaint.setAntiAlias(true);
+        linePaint.setColor(Color.BLACK);
+
+        textPaint = new Paint();
+        textPaint.setAntiAlias(true);
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextSize(32);
     }
 
     public void setData(List<PieChatEntry> list){
@@ -55,15 +68,52 @@ public class PieChatView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if(list != null && list.size() >= 1)
-            canvas.translate(width/2,height/2);
-            for(PieChatEntry p : list){
+        drawPicChat(canvas);
+        drawTextView(canvas);
+    }
+
+    private void drawPicChat(Canvas canvas){
+        if(list != null && list.size() >= 1) {
+            canvas.translate(width / 2, height / 2);
+            for (PieChatEntry p : list) {
                 arcPaint.setColor(p.getColor());
-                if(p.isSelected())
-                    canvas.drawArc(maxRectF,p.getStartAngle(),p.getEndAngle()-p.getStartAngle()-1,true,arcPaint);
+                if (p.isSelected())
+                    canvas.drawArc(maxRectF, p.getStartAngle(), p.getEndAngle() - p.getStartAngle() - 1, true, arcPaint);
                 else
-                    canvas.drawArc(minRectF,p.getStartAngle(),p.getEndAngle()-p.getStartAngle()-1,true,arcPaint);
+                    canvas.drawArc(minRectF, p.getStartAngle(), p.getEndAngle() - p.getStartAngle() - 1, true, arcPaint);
             }
+        }
+    }
+
+    private void drawTextView(Canvas canvas){
+        if(list != null && list.size() >= 1) {
+            float sX = 0, sY = 0, eX = 0, eY = 0;
+
+            for (PieChatEntry p : list) {
+                if(p.isSelected()) {
+                    sX = (float) (maxRadius * Math.cos(Math.toRadians(p.getStartAngle() + (p.getEndAngle() - p.getStartAngle()) / 2)));
+                    sY = (float) (maxRadius * Math.sin(Math.toRadians(p.getStartAngle() + (p.getEndAngle() - p.getStartAngle()) / 2)));
+
+                    eX = (float) ((maxRadius+20) * Math.cos(Math.toRadians(p.getStartAngle() + (p.getEndAngle() - p.getStartAngle()) / 2)));
+                    eY = (float) ((maxRadius+20) * Math.sin(Math.toRadians(p.getStartAngle() + (p.getEndAngle() - p.getStartAngle()) / 2)));
+                }
+                else{
+                    sX = (float) (minRadius * Math.cos(Math.toRadians(p.getStartAngle() + (p.getEndAngle() - p.getStartAngle()) / 2)));
+                    sY = (float) (minRadius * Math.sin(Math.toRadians(p.getStartAngle() + (p.getEndAngle() - p.getStartAngle()) / 2)));
+
+                    eX = (float) ((minRadius+20) * Math.cos(Math.toRadians(p.getStartAngle() + (p.getEndAngle() - p.getStartAngle()) / 2)));
+                    eY = (float) ((minRadius+20) * Math.sin(Math.toRadians(p.getStartAngle() + (p.getEndAngle() - p.getStartAngle()) / 2)));
+                }
+
+                canvas.drawLine(sX,sY,eX,eY,linePaint);
+                if (p.getStartAngle() >= 90.0 && p.getStartAngle() <= 180.0) {
+                    canvas.drawText(p.getName(), eX-30, eY+30, textPaint);
+                }
+                else
+                    canvas.drawText(p.getName(),eX,eY,textPaint);
+
+                }
+        }
     }
 
     @Override
@@ -72,8 +122,8 @@ public class PieChatView extends View {
         width = w - getPaddingLeft() - getPaddingRight();
         height = h - getPaddingBottom() - getPaddingTop();
 
-        minRadius = Math.min(width,height)*2/5;
-        maxRadius = Math.min(width,height)*9/20;
+        minRadius = Math.min(width,height)*7/20;
+        maxRadius = Math.min(width,height)*2/5;
 
         minRectF = new RectF(-minRadius,-minRadius,minRadius,minRadius);
         maxRectF = new RectF(-maxRadius,-maxRadius,maxRadius,maxRadius);
